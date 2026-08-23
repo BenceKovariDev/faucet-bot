@@ -1,39 +1,37 @@
 import os
 import requests
-from bs4 import BeautifulSoup
 
 EMAIL = os.environ.get("FC_EMAIL")
 PASSWORD = os.environ.get("FC_PASS")
 
-print("--- GitHub Actions API / HTTP Bot Indul ---")
+print("--- GitHub Actions HTTP Bot Indul ---")
 
 session = requests.Session()
 session.headers.update({
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "Accept-Language": "hu-HU,hu;q=0.9,en-US;q=0.8,en;q=0.7"
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 })
 
 try:
-    print("1. Bejelentkezési oldal lekérése...")
-    login_page = session.get("https://faucetcrypto.com/login")
+    print("1. Kapcsolódás a Faucetcrypto oldalhoz...")
+    response = session.get("https://faucetcrypto.com/login")
+    print(Főoldal státusz: {response.status_code})
     
+    print("2. Bejelentkezési adatok küldése...")
     payload = {
         "email": EMAIL,
         "password": PASSWORD
     }
+    login_response = session.post("https://faucetcrypto.com/login", data=payload, allow_redirects=True)
     
-    print("2. Bejelentkezési adatok küldése...")
-    response = session.post("https://faucetcrypto.com/login", data=payload, allow_redirects=True)
+    print(f"Bejelentkezési válasz státusz: {login_response.status_code}")
+    print(f"Aktuális URL: {login_response.url}")
     
-    print(f"Válasz státuszkód: {response.status_code}")
-    print(f"Aktuális válasz URL: {response.url}")
-    
-    if "dashboard" in response.url or response.status_code == 200:
-        print("A kérés sikeresen lefutott.")
+    if "dashboard" in login_response.url:
+        print("Sikeres bejelentkezés!")
     else:
-        print("A szerver vagy a védelem blokkolta a kérést.")
+        print("A szerver válaszolt, de a bejelentkezést ellenőrizni kell (lehet, hogy a Cloudflare védi).")
 
 except Exception as e:
-    print(f"Hiba történt a kérés során: {e}")
+    print(f"Hiba történt: {e}")
 
-print("Folyamat kész.")
+print("Folyamat vége.")
