@@ -11,7 +11,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 EMAIL = os.environ.get("FC_EMAIL")
 PASSWORD = os.environ.get("FC_PASS")
 
-print("--- GitHub Actions FaucetCrypto PTC Bot Indul ---")
+print("--- GitHub Actions FaucetCrypto Bot Indul ---")
 
 options = Options()
 options.add_argument("--headless=new")
@@ -32,47 +32,36 @@ try:
     print("Megnyitom a bejelentkezési oldalt...")
     driver.get("https://faucetcrypto.com/login")
     
-    wait = WebDriverWait(driver, 20)
+    wait = WebDriverWait(driver, 25)
     
-    print("E-mail kitöltése...")
-    email_field = wait.until(EC.presence_of_element_located((By.NAME, "email")))
+    print("Várakozás az e-mail mezőre...")
+    # Biztosabb keresés input típus vagy név alapján
+    email_field = wait.until(EC.presence_of_element_located((By.XPATH, "//input[@type='email' or @name='email']")))
+    email_field.clear()
     email_field.send_keys(EMAIL)
     
-    print("Jelszó kitöltése...")
-    password_field = driver.find_element(By.NAME, "password")
+    print("Jelszó mező kitöltése...")
+    password_field = wait.until(EC.presence_of_element_located((By.XPATH, "//input[@type='password' or @name='password']")))
+    password_field.clear()
     password_field.send_keys(PASSWORD)
     
     time.sleep(1)
     
     print("Kattintás a Bejelentkezés gombra...")
-    login_button = driver.find_element(By.XPATH, "//button[contains(text(), 'Bejelentkezés')]")
+    login_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[@type='submit' or contains(text(), 'Bejelentkezés')]")))
     login_button.click()
     
-    print("Várakozás a bejelentkezésre...")
-    time.sleep(7)
+    print("Várakozás a bejelentkezés utáni betöltésre...")
+    time.sleep(8)
     
-    print(f"Jelenlegi URL: {driver.current_url}")
+    print(f"Aktuális URL: {driver.current_url}")
     
-    if "dashboard" in driver.current_url or "home" in driver.current_url:
-        print("Sikeres bejelentkezés! Navigálás a PTC feladatok oldalára...")
+    if "dashboard" in driver.current_url:
+        print("Sikeres belépés a Dashboardra!")
         driver.get("https://faucetcrypto.com/dashboard/ptc")
         time.sleep(5)
-        
-        try:
-            print("Keresem az elérhető PTC feladat gombját...")
-            # Megkeressük az első olyan gombot, amiben benne van az "Óra" szöveg vagy a kék kattintható elem
-            ptc_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(., 'Óra')] | //button[contains(., 'Óra')]")))
-            ptc_button.click()
-            print("Sikeresen rákattintottam egy PTC feladatra!")
-            
-            # Várakozunk, hogy lejárjon az időzítő (pl. 16-40 másodperc)
-            print("Várakozás a hirdetés lefutására...")
-            time.sleep(20)
-            
-        except Exception as e:
-            print(f"Nem találtam kattintható PTC feladatot vagy hiba történt: {e}")
     else:
-        print("A bejelentkezés nem sikerült vagy ellenőrzésbe ütközött.")
+        print("A bejelentkezés valószínűleg nem irányított át a dashboardra.")
 
 except Exception as e:
     print(f"Hiba történt a futás során: {e}")
