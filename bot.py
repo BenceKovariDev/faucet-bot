@@ -1,4 +1,3 @@
-cat << 'EOF' > bot.py
 import os
 import time
 from selenium import webdriver
@@ -7,6 +6,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from webdriver_manager.chrome import ChromeDriverManager
 
 EMAIL = os.environ.get("FC_EMAIL")
 PASSWORD = os.environ.get("FC_PASS")
@@ -25,10 +25,11 @@ if os.path.exists("/usr/bin/google-chrome"):
 elif os.path.exists("/opt/google/chrome/chrome"):
     options.binary_location = "/opt/google/chrome/chrome"
 
-service = Service()
-driver = webdriver.Chrome(service=service, options=options)
-
 try:
+    # Automatikusan kezeli a ChromeDriver-t
+    service = Service(ChromeDriverManager().install())
+    driver = webdriver.Chrome(service=service, options=options)
+    
     print("Megnyitom a bejelentkezési oldalt...")
     driver.get("https://faucetcrypto.com/login")
     
@@ -55,6 +56,8 @@ except Exception as e:
     print(f"Hiba történt: {e}")
 
 finally:
-    driver.quit()
+    try:
+        driver.quit()
+    except:
+        pass
     print("Folyamat kész, böngésző bezárva.")
-EOF
