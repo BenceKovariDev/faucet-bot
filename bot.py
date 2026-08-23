@@ -14,7 +14,7 @@ session.headers.update({
 try:
     print("1. Kapcsolódás a Faucetcrypto oldalhoz...")
     response = session.get("https://faucetcrypto.com/login")
-    print(Főoldal státusz: {response.status_code})
+    print(f"Főoldal státusz: {response.status_code}")
     
     print("2. Bejelentkezési adatok küldése...")
     payload = {
@@ -29,7 +29,7 @@ try:
     if "dashboard" in login_response.url:
         print("Sikeres bejelentkezés!")
     else:
-        print("A szerver válaszolt, de a bejelentkezést ellenőrizni kell (lehet, hogy a Cloudflare védi).")
+        print("A szerver válaszolt, de a bejelentkezést ellenőrizni kell.")
 
 except Exception as e:
     print(f"Hiba történt: {e}")
