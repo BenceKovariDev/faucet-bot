@@ -6,7 +6,6 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.chrome import ChromeDriverManager
 
 EMAIL = os.environ.get("FC_EMAIL")
 PASSWORD = os.environ.get("FC_PASS")
@@ -20,13 +19,11 @@ options.add_argument("--disable-dev-shm-usage")
 options.add_argument("--disable-gpu")
 options.add_argument("--window-size=1920,1080")
 
-if os.path.exists("/usr/bin/google-chrome"):
-    options.binary_location = "/usr/bin/google-chrome"
-elif os.path.exists("/opt/google/chrome/chrome"):
-    options.binary_location = "/opt/google/chrome/chrome"
-
 try:
-    service = Service(ChromeDriverManager().install())
+    # GitHub Actions Ubuntu környezetben a chromedriver és a google-chrome alapból helyben van
+    service = Service("/usr/bin/chromedriver")
+    options.binary_location = "/usr/bin/google-chrome"
+    
     driver = webdriver.Chrome(service=service, options=options)
     
     print("Megnyitom a bejelentkezési oldalt...")
@@ -34,8 +31,7 @@ try:
     
     wait = WebDriverWait(driver, 25)
     
-    print("Várakozás az e-mail mezőre...")
-    # Biztosabb keresés input típus vagy név alapján
+    print("E-mail kitöltése...")
     email_field = wait.until(EC.presence_of_element_located((By.XPATH, "//input[@type='email' or @name='email']")))
     email_field.clear()
     email_field.send_keys(EMAIL)
@@ -57,14 +53,14 @@ try:
     print(f"Aktuális URL: {driver.current_url}")
     
     if "dashboard" in driver.current_url:
-        print("Sikeres belépés a Dashboardra!")
+        print("Sikeres belépés!")
         driver.get("https://faucetcrypto.com/dashboard/ptc")
         time.sleep(5)
     else:
-        print("A bejelentkezés valószínűleg nem irányított át a dashboardra.")
+        print("Nem sikerült elérni a dashboardot (lehet, hogy védelembe ütközött).")
 
 except Exception as e:
-    print(f"Hiba történt a futás során: {e}")
+    print(f"Hiba történt: {e}")
 
 finally:
     try:
